@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+        <meta charset="utf-8">
+        <title>自定义控件学习</title>
+        <style>
+                /*容器区域*/
+                #box{width: 300px; height: 60px; background:#434343; border-radius: 10px; position: absolute;}
+                /*播放按钮*/
+                #box .play{width: 32px; height: 32px; background: url(images/play.svg); position: relative; top: 14px; left: 8px; cursor: pointer; float: left;}
+                /*暂停按钮*/
+                #box .pause{width: 32px; height: 32px; background: url(images/pause.svg); position: relative; top: 14px; left: 8px; cursor: pointer; float: left;}
+                /*进度条*/
+                #progress{float: left; width: 80%; height: 3px; background: #ccc; position: relative; top: 29px; left: 20px;}
+                /*进度加载*/
+                #bar{width: 0%; height: 100%; background: #39f; display: inline-block; position: relative; top: -11.8px; left:0}
+                /*控制点*/
+                #control{width: 10px; height: 10px; background: #fff; position: relative; top: -25px; left:-12px; border-radius: 100%; border:3px solid rgba(0,0,0,0.4); cursor: pointer;}
+
+        </style>
+</head>
+<body>
+        <!--引入音频-->
+        <audio src="http://cdn5.lizhi.fm/audio/2017/10/12/2629787855524158470_hd.mp3" controls=controls id="audio"></audio>
+
+        <!--自定义控件容器-->
+        <div id="box">
+                <!--构建播放/暂停按钮-->
+                <div id="play" class="play"></div>
+                <!--创建进度条-->
+                <div id="progress">
+                        <!--创建加载进度条-->
+                        <span id="bar"></span>
+                        <!--创建控制点-->
+                        <div id="control"></div>
+                </div>
+        </div>
+
+        <!--写入js控制代码-->
+        <script>
+                window.onload=function(){
+
+
+
+                        //获取box对象
+                        var box=document.getElementById("box");
+                        //获取音频对象
+                        var audio=document.getElementById("audio");
+                        //获取播放/暂停对象
+                        var play=document.getElementById("play");
+                        play.onclick=function(){
+                                if(audio.paused){
+                                        play.className="pause";
+                                        audio.play();
+                                }else{
+                                        play.className="play";
+                                        audio.pause();
+                                }
+                        }
+
+
+
+
+
+                        //获取进度条对象
+                        var progress=document.getElementById("progress");
+                        //获取加载进度条对象
+                        var bar=document.getElementById("bar");
+                        //获取控制点对象
+                        var control=document.getElementById("control");
+
+                        //进度条事件
+                        audio.addEventListener("timeupdate",function(){
+                                var scales=audio.currentTime/audio.duration;
+                                bar.style.width=progress.offsetWidth*scales+"px";
+                                control.style.left=progress.offsetWidth*scales-12+"px";
+                        },false)
+
+
+
+                        //进度条拖拽
+                        control.onmousedown=function(e){
+                                audio.pause();
+                                document.onmousemove=function(e){
+                                        var leftv=e.clientX-progress.offsetLeft-box.offsetLeft;
+                                        if(leftv<=0){
+                                                leftv=0;
+                                        }
+                                        if(leftv>=progress.offsetWidth){
+                                                leftv=progress.offsetWidth;
+                                        }
+                                        control.style.left=leftv+"px"
+                                }
+                                document.onmouseup=function(){
+                                        var scales=control.offsetLeft/progress.offsetWidth;
+                                        audio.currentTime =audio.duration*scales;
+                                        audio.play();
+                                        document.onmousemove=null;
+                                        document.onmousedown=null;
+
+                                }
+                        }
+
+
+
+                }
+
+        </script>
+
+</body>
+</html>

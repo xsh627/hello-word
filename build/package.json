@@ -1,0 +1,33 @@
+{
+  "name": "player",
+  "version": "1.0.0",
+  "description": "player desc",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "array-differ": "^2.0.3",
+    "array-uniq": "^1.0.3",
+    "beeper": "^1.1.1",
+    "dateformat": "^3.0.2",
+    "end-of-stream": "^1.4.1",
+    "get-gulp-args": "^0.0.1",
+    "gulp": "^3.9.1",
+    "gulp-sass": "^3.1.0",
+    "has-gulplog": "^0.1.0",
+    "lodash._reescape": "^3.0.0",
+    "lodash._reevaluate": "^3.0.0",
+    "lodash.clonedeep": "^4.5.0",
+    "lodash.template": "^4.4.0",
+    "multipipe": "^2.0.1",
+    "node-sass": "^4.7.2",
+    "sass": "^1.0.0-beta.4",
+    "sequencify": "^0.0.7",
+    "stream-consume": "^0.1.0",
+    "vinyl": "^2.1.0",
+    "vinyl-fs": "^3.0.1"
+  }
+}
