@@ -6,7 +6,7 @@ let args = require('get-gulp-args')();
 
 let config = {
 	sass: {
-		src: '../sccc/',
+		src: '../scss/',
 		dest: '../css/'
 	},
 	js: {
@@ -27,14 +27,14 @@ gulp.task('css:min', () => {
 
 gulp.task('sass', function(){
     //sass()方法用于转换sass到css
-  return gulp.src('../scss/*.scss')
+  return gulp.src('../scss/' + `${WATCH_SRC}` + '/**/*.scss')
     .pipe(sass()) // Converts Sass to CSS with gulp-sass
-    .pipe(gulp.dest('../css'))
+    .pipe(gulp.dest('../css/' + `${WATCH_SRC}`))
 });
 
 //Watching Sass files for changes
 gulp.task('watch', function(){
-  gulp.watch('../scss/**/*.scss', ['sass']); 
+  gulp.watch(config.sass.src + `${WATCH_SRC}` + '/**/*.scss', ['sass']); 
   // Other watchers
 })
 
