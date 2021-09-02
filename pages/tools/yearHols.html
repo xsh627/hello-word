@@ -29,31 +29,36 @@
 <div class="wrap">
 	<div class="date-bar">
 		<div class="date-item">
-			<input type="text" class="date-input">
+			<input type="text" class="date-input date-start">
 		</div>
 		<div class="date-line">-</div>
 		<div class="date-item">
-			<input type="text" class="date-input">
+			<input type="text" class="date-input date-end">
 		</div>
 	</div>
 	<div class="result"></div>
 </div>
 <script>
 $(function () {
-	$('.date-input').flatpickr()
+	$('.date-input').flatpickr({
+		defaultDate: "today"
+	})
 	$('.date-input').eq(0).val('2021-01-01')
 	$('.date-input').on('change', function (e) {
 		calResult()
 	})
+	calResult()
 })
 function calResult () {
 	var dateStart = $('.date-input').eq(0).val()
 	var dateEnd = $('.date-input').eq(1).val()
-	var ts = new Date(dateEnd) - new Date(dateStart)
-	var yd = 7
-	var result = ts * yd / (1000*60*60*24*365)
-	result = Math.floor(result)
-	$('.result').html(result)
+	if (dateStart && dateEnd) {
+		var ts = new Date(dateEnd) - new Date(dateStart)
+		var yd = 7
+		var result = ts * yd / (1000*60*60*24*365)
+		result = Math.floor(result)
+		$('.result').html(result)
+	}
 }
 </script>
 </body>
