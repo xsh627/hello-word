@@ -31,8 +31,14 @@ body,
 }
 
 .box {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
     width: 1200px;
     height: 700px;
+    margin: auto;
     background-color: #fafafa;
     transform: scale(0.8);
 }
@@ -55,6 +61,7 @@ body,
     box-sizing: border-box;
     background-image: linear-gradient(to right, rgb(255, 233, 216), rgb(255, 192, 138));
     transform: translate(0px, 0px) scale(1) rotateX(0deg) rotateY(0deg) rotateZ(60deg) translate(-50%, -50%);
+    transform-origin: 0 0;
 }
 
 .block.move {
@@ -63,8 +70,7 @@ body,
     animation-delay: 0ms;
     animation-fill-mode: forwards;
     animation-timing-function: linear;
-    animation-iteration-count: infinite;
-    transform-origin: 0 0;
+    /* animation-iteration-count: infinite; */
 }
 
 .block.move .block-shape {
@@ -87,18 +93,75 @@ body,
 }
 
 .floor-item.left {
-    width: 500px;
+    width: 550px;
     height: 5px;
-    transform: translate(-243px, 0) rotate(59deg);
+    transform: translate(-293px, 0) rotate(59deg);
     transform-origin: 100% 0;
 }
 
 .floor-item.right {
     right: 0;
-    width: 500px;
+    width: 550px;
     height: 5px;
-    transform: translate(88px, 0) rotate(-31.7deg);
+    transform: translate(145px, 0) rotate(-31.7deg);
     transform-origin: 0 100%;
+}
+
+.floor-item.mid .mao {
+  position: absolute;
+  top: 0;
+  width: 5px;
+  height: 50px;
+  background-color: #000;
+  transform: rotate(-30deg);
+}
+
+.floor-item.mid .mao.m-1 {
+  left: 20px;
+}
+
+.floor-item.mid .mao.m-2 {
+  left: 120px;
+}
+
+.floor-item.mid .mao.m-3 {
+  left: 220px;
+}
+
+.floor-item.mid .mao.m-4 {
+  left: 320px;
+}
+
+.floor-item.mid .mao.m-5 {
+  left: 420px;
+}
+
+.floor-item.mid .mao.m-6 {
+  left: 520px;
+}
+
+.floor-item.mid .mao.m-7 {
+  left: 620px;
+}
+
+.floor-item.mid .mao.m-8 {
+  left: 720px;
+}
+
+.floor-item.mid .mao.m-9 {
+  left: 820px;
+}
+
+.floor-item.mid .mao.m-10 {
+  left: 920px;
+}
+
+.floor-item.mid .mao.m-11 {
+  left: 1020px;
+}
+
+.floor-item.mid .mao.m-12 {
+  left: 1120px;
 }
 
 #moveBtn {
@@ -1825,7 +1888,20 @@ body,
         </div>
         <div class="floor">
             <div class="floor-item left"></div>
-            <div class="floor-item mid"></div>
+            <div class="floor-item mid">
+              <div class="mao m-1"></div>
+              <div class="mao m-2"></div>
+              <div class="mao m-3"></div>8
+              <div class="mao m-4"></div>
+              <div class="mao m-5"></div>
+              <div class="mao m-6"></div>
+              <div class="mao m-7"></div>
+              <div class="mao m-8"></div>
+              <div class="mao m-9"></div>
+              <div class="mao m-10"></div>
+              <div class="mao m-11"></div>
+              <div class="mao m-12"></div>
+            </div>
             <div class="floor-item right"></div>
         </div>
     </div>
