@@ -32,9 +32,14 @@
   <div class="wrapper">
     <div class="params-form">
       <div class="form-item">
+        <label for="">SKU：</label>
         <select name="" id="product">
           <option value="-1">无</option>
         </select>
+      </div>
+      <div class="form-item">
+        <label for="">地区：</label>
+        <select name="" id="area"></select>
       </div>
       <div class="form-item">
         <label for="">个数：</label>
@@ -147,8 +152,167 @@
           price: 3
         }
       ]
+      let lastLvlPrice = 0
+      const areaData = [
+        {
+          id: 'guangdong',
+          label: '广东',
+          price: 2
+        },
+        {
+          id: 'fujian',
+          label: '福建',
+          price: 2.5
+        },
+        {
+          id: 'guangxi',
+          label: '广西',
+          price: 2.5
+        },
+        {
+          id: 'jiangxi',
+          label: '江西',
+          price: 2.5
+        },
+        {
+          id: 'hunan',
+          label: '湖南',
+          price: 2.5
+        },
+        {
+          id: 'hubei',
+          label: '湖北',
+          price: 2.5
+        },
+        {
+          id: 'jiangsu',
+          label: '江苏',
+          price: 2.5
+        },
+        {
+          id: 'zhejiang',
+          label: '浙江',
+          price: 2.5
+        },
+        {
+          id: 'shanghai',
+          label: '上海',
+          price: 3
+        },
+        {
+          id: 'anhui',
+          label: '安徽',
+          price: 2.5
+        },
+        {
+          id: 'henan',
+          label: '河南',
+          price: 3.5
+        },
+        {
+          id: 'beijing',
+          label: '北京',
+          price: 4
+        },
+        {
+          id: 'tianjin',
+          label: '天津',
+          price: 3.5
+        },
+        {
+          id: 'hainan',
+          label: '海南',
+          price: 4
+        },
+        {
+          id: 'guizhou',
+          label: '贵州',
+          price: 3.5
+        },
+        {
+          id: 'yunnan',
+          label: '云南',
+          price: 3.5
+        },
+        {
+          id: 'hebei',
+          label: '河北',
+          price: 3.5
+        },
+        {
+          id: 'chongqing',
+          label: '重庆',
+          price: 3.5
+        },
+        {
+          id: 'sichuan',
+          label: '四川',
+          price: 3.5
+        },
+        {
+          id: 'shandong',
+          label: '山东',
+          price: 3.5
+        },
+        {
+          id: 'shanxi',
+          label: '陕西',
+          price: 3.5
+        },
+        {
+          id: 'shanxi',
+          label: '山西',
+          price: 3.5
+        },
+        {
+          id: 'liaoning',
+          label: '辽宁',
+          price: 4
+        },
+        {
+          id: 'jilin',
+          label: '吉林',
+          price: 4
+        },
+        {
+          id: 'heilongjiang',
+          label: '黑龙江',
+          price: 4
+        },
+        {
+          id: 'ningxia',
+          label: '宁夏',
+          price: 6
+        },
+        {
+          id: 'qinghai',
+          label: '青海',
+          price: 6
+        },
+        {
+          id: 'gansu',
+          label: '甘肃',
+          price: 6
+        },
+        {
+          id: 'neimenggu',
+          label: '内蒙古',
+          price: 6
+        },
+        {
+          id: 'xinjiang',
+          label: '新疆',
+          price: 0
+        },
+        {
+          id: 'xizang',
+          label: '西藏',
+          price: 0
+        }
+      ]
       const optionMap = {}
       const $selectOfProduct = $('#product')
+      const $selectOfArea = $('#area')
       const $inputAmount = $('#inputAmount')
       const $inputLvlPrice1 = $('#inputLvlPrice1')
       const $inputLvlPrice2 = $('#inputLvlPrice2')
@@ -179,8 +343,13 @@
             }
           }
         })
-        console.log('optionMap===', optionMap)
         $selectOfProduct.html(optionsHtml)
+        console.log('optionMap===', optionMap)
+        let areaOptionsHtml = ''
+        areaData.forEach(function (areaItem) {
+          areaOptionsHtml += `<option value="${areaItem.price}">${areaItem.label}</option>`
+        })
+        $selectOfArea.html(areaOptionsHtml)
         $inputAmount.val(1)
         $inputLvlPrice1.val(1.7)
         $inputLvlPrice2.val(0.2)
@@ -192,9 +361,11 @@
 
       function initEvent () {
         $selectOfProduct.on('change', weightRelateChangeHandle)
+        $selectOfArea.on('change', areaChangeHandle)
         $inputAmount.on('input', weightRelateChangeHandle)
         $calcBtn.on('click', calculate)
         $resetBtn.on('click', init)
+        $selectOfArea.trigger('change')
       }
 
       function weightRelateChangeHandle () {
@@ -208,6 +379,11 @@
         const totalWeight = (singleWeight * num).toFixed(3)
         $singleWeight.html(singleWeight)
         $totalWeight.html(totalWeight)
+      }
+
+      function areaChangeHandle () {
+        console.log(111, $selectOfArea.val())
+        lastLvlPrice = Number($selectOfArea.val())
       }
 
       function calculate () {
@@ -252,7 +428,7 @@
           if (weight > 3) {
             const overWeight2 = weight - 3
             const overTimes2 = Math.ceil(overWeight2)
-            result += 2 * overTimes2
+            result += lastLvlPrice * overTimes2
           }
         }
         console.log('result===', result)
