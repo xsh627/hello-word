@@ -24,6 +24,7 @@
     }
     #result {
       color: #f00;
+      font-size: 20px;
     }
   </style>
 </head>
@@ -58,6 +59,12 @@
       <div class="form-item">
         <label for="">3kg以上</label>
         <input type="text" class="input-lvl-price" id="inputLvlPrice5">
+      </div>
+      <div class="form-item">
+        <strong>个重：<span id="singleWeight">-</span>kg</strong>
+      </div>
+      <div class="form-item">
+        <strong>总重：<span id="totalWeight">-</span>kg</strong>
       </div>
       <div class="form-item">
         <strong>所需快递费（参考值）：<span id="result">-</span>元</strong>
@@ -105,9 +112,39 @@
         },
         {
           id: 'makalong-sanjie',
-          label: '马卡龙-三阶',
+          label: '魔方-二阶',
+          weight: 0.06,
+          price: 4.4
+        },
+        {
+          id: 'makalong-sanjie',
+          label: '魔方-三阶',
           weight: 0.075,
           price: 3.2
+        },
+        {
+          id: 'makalong-sanjie',
+          label: '魔方-四阶',
+          weight: 0.115,
+          price: 12.4
+        },
+        {
+          id: 'makalong-sanjie',
+          label: '魔方-五阶',
+          weight: 0.115,
+          price: 15.4
+        },
+        {
+          id: 'makalong-sanjie',
+          label: '魔方-金字塔',
+          weight: 0.065,
+          price: 8.4
+        },
+        {
+          id: 'makalong-sanjie',
+          label: '魔方-圣手/传奇',
+          weight: 0.065,
+          price: 3
         }
       ]
       const optionMap = {}
@@ -118,6 +155,8 @@
       const $inputLvlPrice3 = $('#inputLvlPrice3')
       const $inputLvlPrice4 = $('#inputLvlPrice4')
       const $inputLvlPrice5 = $('#inputLvlPrice5')
+      const $singleWeight = $('#singleWeight')
+      const $totalWeight = $('#totalWeight')
       const $result = $('#result')
 
       const $calcBtn = $('#calcBtn')
@@ -152,8 +191,23 @@
       }
 
       function initEvent () {
+        $selectOfProduct.on('change', weightRelateChangeHandle)
+        $inputAmount.on('input', weightRelateChangeHandle)
         $calcBtn.on('click', calculate)
         $resetBtn.on('click', init)
+      }
+
+      function weightRelateChangeHandle () {
+        const productId = $selectOfProduct.val()
+        if (productId === '-1') return
+
+        const num = Number($inputAmount.val())
+        if (isNaN(num)) return
+
+        const singleWeight = optionMap[productId].weight
+        const totalWeight = (singleWeight * num).toFixed(3)
+        $singleWeight.html(singleWeight)
+        $totalWeight.html(totalWeight)
       }
 
       function calculate () {
