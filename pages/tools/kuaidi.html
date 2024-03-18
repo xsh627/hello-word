@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>快递计算工具</title>
+  <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.7.1/jquery.js"></script>
+  <style>
+    * {
+      padding: 0;
+      margin: 0;
+    }
+    #result {
+      color: #f00;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="params-form">
+      <div class="form-item">
+        <select name="" id="product">
+          <option value="-1">无</option>
+        </select>
+      </div>
+      <div class="form-item">
+        <label for="">个数：</label>
+        <input type="text" class="input-num" id="inputAmount">
+      </div>
+      <div class="form-item">
+        <label for="">0.1kg以内</label>
+        <input type="text" class="input-lvl-price" id="inputLvlPrice1">
+      </div>
+      <div class="form-item">
+        <label for="">0.1kg~0.3kg</label>
+        <input type="text" class="input-lvl-price" id="inputLvlPrice2">
+      </div>
+      <div class="form-item">
+        <label for="">0.31kg~0.5kg</label>
+        <input type="text" class="input-lvl-price" id="inputLvlPrice3">
+      </div>
+      <div class="form-item">
+        <label for="">超0.5kg续重每0.5kg</label>
+        <input type="text" class="input-lvl-price" id="inputLvlPrice4">
+      </div>
+      <div class="form-item">
+        <label for="">3kg以上</label>
+        <input type="text" class="input-lvl-price" id="inputLvlPrice5">
+      </div>
+      <div class="form-item">
+        <div class="btn-box">
+          <button id="calcBtn">计算</button>
+          <button id="resetBtn">重置</button>
+        </div>
+      </div>
+      <div class="form-item">
+        <strong>所需快递费：<span id="result">-</span>元</strong>
+      </div>
+    </div>
+  </div>
+  <script>
+    $(function () {
+      const options = [
+        {
+          id: 'fanhuasheng-1',
+          label: '翻花绳-1条',
+          weight: 0.00075,
+          price: 1.8
+        },
+        {
+          id: 'fanhuasheng-5',
+          label: '翻花绳-5条',
+          weight: 0.00375,
+          price: 3.52
+        },
+        {
+          id: 'caihongquan-dahao',
+          label: '彩虹圈-大号',
+          weight: 0.115,
+          price: 4.5
+        },
+        {
+          id: 'caihongquan-zhonghao',
+          label: '彩虹圈-中号',
+          weight: 0.045,
+          price: 3.5
+        },
+        {
+          id: 'zhongbiaomoxing',
+          label: '钟表模型',
+          weight: 0.05,
+          price: 3.5
+        },
+        {
+          id: 'makalong-sanjie',
+          label: '马卡龙-三阶',
+          weight: 0.075,
+          price: 3.2
+        }
+      ]
+      const optionMap = {}
+      const $selectOfProduct = $('#product')
+      const $inputAmount = $('#inputAmount').val(1)
+      const $inputLvlPrice1 = $('#inputLvlPrice1').val(1.7)
+      const $inputLvlPrice2 = $('#inputLvlPrice2').val(0.2)
+      const $inputLvlPrice3 = $('#inputLvlPrice3').val(0.4)
+      const $inputLvlPrice4 = $('#inputLvlPrice4').val(0.7)
+      const $inputLvlPrice5 = $('#inputLvlPrice5').val(2)
+      const $result = $('#result')
+
+      const $calcBtn = $('#calcBtn')
+
+      init()
+
+      function init () {
+        let optionsHtml = ''
+        options.forEach(function (optionItem) {
+          console.log('item===', optionItem)
+          optionsHtml += `<option value="${optionItem.id}">${optionItem.label}</option>`
+          const noNeedKeys = ['id']
+          optionMap[optionItem.id] = {}
+          for (let key in optionItem) {
+            if (!noNeedKeys.includes(key)) {
+              optionMap[optionItem.id][key] = optionItem[key]
+            }
+          }
+        })
+        console.log('optionMap===', optionMap)
+        $selectOfProduct.append(optionsHtml)
+
+        // calculate()
+        $calcBtn.on('click', calculate)
+      }
+
+      function calculate () {
+        const productId = $selectOfProduct.val()
+        console.log('productId===', productId, typeof productId)
+
+        if (['', '-1'].includes(productId)) {
+          console.log('请选择产品')
+          return
+        }
+
+        const productData = optionMap[productId]
+        if (!productData) {
+          console.log('找不到对应产品数据')
+          return
+        }
+
+        const amount = Number($inputAmount.val())
+        const singleWeight = Number(productData.weight)
+        const weight = singleWeight * amount
+        let result = 0
+
+        const lvlPrice1 = Number($inputLvlPrice1.val())
+        const lvlPrice2 = Number($inputLvlPrice2.val())
+        const lvlPrice3 = Number($inputLvlPrice3.val())
+        const lvlPrice4 = Number($inputLvlPrice4.val())
+        const lvlPrice5 = Number($inputLvlPrice5.val())
+
+        result = 1.7
+        if (weight > 0.1) {
+          result += 0.2
+
+          if (weight > 0.3) {
+            result += 0.4
+          }
+          if (weight > 0.5) {
+            let overWeight = weight - 0.5
+            overWeight = overWeight > 2.5 ? 2.5 : overWeight
+            const overTimes = Math.ceil(overWeight/0.5)
+            result += 0.7 * overTimes
+          }
+          if (weight > 3) {
+            const overWeight2 = weight - 3
+            const overTimes2 = Math.ceil(overWeight2)
+            result += 2 * overTimes2
+          }
+        }
+        console.log('result===', result)
+        $result.html(result)
+      }
+    })
+  </script>
+</body>
+</html>
