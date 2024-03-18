@@ -10,6 +10,18 @@
       padding: 0;
       margin: 0;
     }
+    .form-item {
+      margin: 10px 10px 0;
+    }
+    .btn-box {
+      display: flex;
+      justify-content: center;
+    }
+    .ope-btn {
+      padding: 10px;
+      margin: 0 20px;
+      font-size: 20px;
+    }
     #result {
       color: #f00;
     }
@@ -48,13 +60,13 @@
         <input type="text" class="input-lvl-price" id="inputLvlPrice5">
       </div>
       <div class="form-item">
-        <div class="btn-box">
-          <button id="calcBtn">计算</button>
-          <button id="resetBtn">重置</button>
-        </div>
+        <strong>所需快递费（参考值）：<span id="result">-</span>元</strong>
       </div>
       <div class="form-item">
-        <strong>所需快递费：<span id="result">-</span>元</strong>
+        <div class="btn-box">
+          <button class="ope-btn" id="calcBtn">计算</button>
+          <button class="ope-btn" id="resetBtn">重置</button>
+        </div>
       </div>
     </div>
   </div>
@@ -100,20 +112,23 @@
       ]
       const optionMap = {}
       const $selectOfProduct = $('#product')
-      const $inputAmount = $('#inputAmount').val(1)
-      const $inputLvlPrice1 = $('#inputLvlPrice1').val(1.7)
-      const $inputLvlPrice2 = $('#inputLvlPrice2').val(0.2)
-      const $inputLvlPrice3 = $('#inputLvlPrice3').val(0.4)
-      const $inputLvlPrice4 = $('#inputLvlPrice4').val(0.7)
-      const $inputLvlPrice5 = $('#inputLvlPrice5').val(2)
+      const $inputAmount = $('#inputAmount')
+      const $inputLvlPrice1 = $('#inputLvlPrice1')
+      const $inputLvlPrice2 = $('#inputLvlPrice2')
+      const $inputLvlPrice3 = $('#inputLvlPrice3')
+      const $inputLvlPrice4 = $('#inputLvlPrice4')
+      const $inputLvlPrice5 = $('#inputLvlPrice5')
       const $result = $('#result')
 
       const $calcBtn = $('#calcBtn')
+      const $resetBtn = $('#resetBtn')
 
       init()
 
+      initEvent()
+
       function init () {
-        let optionsHtml = ''
+        let optionsHtml = '<option value="-1">无</option>'
         options.forEach(function (optionItem) {
           console.log('item===', optionItem)
           optionsHtml += `<option value="${optionItem.id}">${optionItem.label}</option>`
@@ -126,10 +141,19 @@
           }
         })
         console.log('optionMap===', optionMap)
-        $selectOfProduct.append(optionsHtml)
+        $selectOfProduct.html(optionsHtml)
+        $inputAmount.val(1)
+        $inputLvlPrice1.val(1.7)
+        $inputLvlPrice2.val(0.2)
+        $inputLvlPrice3.val(0.4)
+        $inputLvlPrice4.val(0.7)
+        $inputLvlPrice5.val(2)
+        $result.html('-')
+      }
 
-        // calculate()
+      function initEvent () {
         $calcBtn.on('click', calculate)
+        $resetBtn.on('click', init)
       }
 
       function calculate () {
@@ -178,6 +202,7 @@
           }
         }
         console.log('result===', result)
+        result = result.toFixed(2)
         $result.html(result)
       }
     })
