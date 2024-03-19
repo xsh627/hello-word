@@ -152,7 +152,6 @@
           price: 3
         }
       ]
-      let lastLvlPrice = 0
       const areaData = [
         {
           id: 'guangdong',
@@ -382,8 +381,7 @@
       }
 
       function areaChangeHandle () {
-        console.log(111, $selectOfArea.val())
-        lastLvlPrice = Number($selectOfArea.val())
+        $inputLvlPrice5.val(Number($selectOfArea.val()))
       }
 
       function calculate () {
@@ -412,23 +410,23 @@
         const lvlPrice4 = Number($inputLvlPrice4.val())
         const lvlPrice5 = Number($inputLvlPrice5.val())
 
-        result = 1.7
+        result = lvlPrice1
         if (weight > 0.1) {
-          result += 0.2
+          result += lvlPrice2
 
           if (weight > 0.3) {
-            result += 0.4
+            result += lvlPrice3
           }
           if (weight > 0.5) {
             let overWeight = weight - 0.5
             overWeight = overWeight > 2.5 ? 2.5 : overWeight
             const overTimes = Math.ceil(overWeight/0.5)
-            result += 0.7 * overTimes
+            result += lvlPrice4 * overTimes
           }
           if (weight > 3) {
             const overWeight2 = weight - 3
             const overTimes2 = Math.ceil(overWeight2)
-            result += lastLvlPrice * overTimes2
+            result += lvlPrice5 * overTimes2
           }
         }
         console.log('result===', result)
