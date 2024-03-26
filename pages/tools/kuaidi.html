@@ -150,6 +150,18 @@
           label: '魔方-圣手/传奇',
           weight: 0.065,
           price: 3
+        },
+        {
+          id: 'pinghengtaikongren-lanse',
+          label: '平衡太空人-蓝色',
+          weight: 0.18,
+          price: 5.5
+        },
+        {
+          id: 'pinghengtaikongren-huangse',
+          label: '平衡太空人-黄色',
+          weight: 0.185,
+          price: 5.5
         }
       ]
       const areaData = [
@@ -310,6 +322,11 @@
         }
       ]
       const optionMap = {}
+      const areaMap = {}
+      const farAreas = [
+        'xinjiang',
+        'xizang'
+      ]
       const $selectOfProduct = $('#product')
       const $selectOfArea = $('#area')
       const $inputAmount = $('#inputAmount')
@@ -346,8 +363,15 @@
         console.log('optionMap===', optionMap)
         let areaOptionsHtml = ''
         areaData.forEach(function (areaItem) {
-          areaOptionsHtml += `<option value="${areaItem.price}">${areaItem.label}</option>`
+          areaOptionsHtml += `<option value="${areaItem.id}">${areaItem.label}</option>`
+          areaMap[areaItem.id] = {}
+          for (let key in areaItem) {
+            if (!['id'].includes(key)) {
+              areaMap[areaItem.id][key] = areaItem[key]
+            }
+          }
         })
+        console.log('areaMap===', areaMap)
         $selectOfArea.html(areaOptionsHtml)
         $inputAmount.val(1)
         $inputLvlPrice1.val(1.7)
@@ -381,7 +405,11 @@
       }
 
       function areaChangeHandle () {
-        $inputLvlPrice5.val(Number($selectOfArea.val()))
+        const areaId = $selectOfArea.val()
+        const selectedAreaData = areaMap[areaId]
+        if (selectedAreaData) {
+          $inputLvlPrice5.val(Number(selectedAreaData.price))
+        }
       }
 
       function calculate () {
@@ -410,25 +438,42 @@
         const lvlPrice4 = Number($inputLvlPrice4.val())
         const lvlPrice5 = Number($inputLvlPrice5.val())
 
-        result = lvlPrice1
-        if (weight > 0.1) {
-          result += lvlPrice2
+        let times
 
-          if (weight > 0.3) {
-            result += lvlPrice3
-          }
+        const areaId = $selectOfArea.val()
+        console.log('areaId===', areaId)
+        if (farAreas.includes(areaId)) {
           if (weight > 0.5) {
-            let overWeight = weight - 0.5
-            overWeight = overWeight > 2.5 ? 2.5 : overWeight
-            const overTimes = Math.ceil(overWeight/0.5)
-            result += lvlPrice4 * overTimes
+            times = Math.ceil(weight/0.5)
+            result = times * 5
+          } else {
+            result = 3
+            if (weight > 0.3) {
+              result += 5
+            }
           }
+        } else {
           if (weight > 3) {
-            const overWeight2 = weight - 3
-            const overTimes2 = Math.ceil(overWeight2)
-            result += lvlPrice5 * overTimes2
+            times = Math.ceil(weight/1)
+            result = times * lvlPrice5
+          } else {
+            result = lvlPrice1
+            if (weight > 0.1) {
+              result += lvlPrice2
+
+              if (weight > 0.3) {
+                result += lvlPrice3
+              }
+              if (weight > 0.5) {
+                let overWeight = weight - 0.5
+                overWeight = overWeight > 2.5 ? 2.5 : overWeight
+                const overTimes = Math.ceil(overWeight/0.5)
+                result += lvlPrice4 * overTimes
+              }
+            }
           }
         }
+        
         console.log('result===', result)
         result = result.toFixed(2)
         $result.html(result)
