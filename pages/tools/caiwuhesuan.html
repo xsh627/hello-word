@@ -6,6 +6,7 @@
   <title>财务结算</title>
   <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.7.1/jquery.js"></script>
   <script src="https://cdn.bootcdn.net/ajax/libs/big.js/6.2.1/big.js"></script>
+  <script src="https://cdn.bootcdn.net/ajax/libs/vConsole/3.15.1/vconsole.min.js"></script>
   <style>
     * {
       padding: 0;
@@ -831,212 +832,226 @@
       const $addBtn = $('#formTableAddBtn')
       const $trs = $formTable.find('tbody tr')
       const $calcBtn = $('#calcBtn')
-      
-      $addBtn.on('click', function () {
-        $formTable.find('tbody').append(trTmpl)
-      }).trigger('click')
 
-      $formTable.delegate('.delete-btn', 'click', function () {
-        const $btn = $(this)
-        $btn.closest('tr').remove()
-      }).delegate('.sku-add-btn', 'click', function () {
-        const $btn = $(this)
-        const $tr = $btn.closest('tr')
-        const $skuList = $tr.find('.sku-list')
-        $skuList.append(skuItemTmpl)
-      }).delegate('.sku-delete-btn', 'click', function () {
-        const $deleteBtn = $(this)
-        $deleteBtn.closest('.sku-item').remove()
-      }).delegate('.sku-up-btn', 'click', function () {
-        const $btn = $(this)
-        const $skuTr = $btn.closest('.sku-item')
-        const skuIndex = $skuTr.index()
-        if (skuIndex > 0) {
-          $skuTr.insertBefore($skuTr.prev())
-        }
-      }).delegate('.sku-down-btn', 'click', function () {
-        const $btn = $(this)
-        const $skuTr = $btn.closest('.sku-item')
-        const skuIndex = $skuTr.index()
-        const skuNum = $skuTr.parent().children('.sku-item').length
-        if (skuIndex < skuNum - 1) {
-          $skuTr.insertAfter($skuTr.next())
-        }
-      })
+      function initEvent () {
+        $addBtn.on('click', function () {
+          $formTable.find('tbody').append(trTmpl)
+        }).trigger('click')
 
-      $yearMonth.on('change', function () {
-        $removePackingCostSpan.empty()
-        $removeCustomerServiceCostSpan.empty()
-        $totalCalcAmount.empty()
-        $totalPrime.empty()
-        $totalProfit.empty()
-        const yearMonth = $yearMonth.val()
-        let cacheData = {}
-        const cacheDataStr = localStorage.getItem('cacheData')
-        if (cacheDataStr) {
-          cacheData = JSON.parse(cacheDataStr)
-        } else {
-          cacheData = defaultCacheData
-        }
-        // console.log('cacheDataStr===', cacheDataStr)
-        let curYearMonthData = cacheData[yearMonth]
-        console.log('cacheData===', cacheData)
-        $totalAmount.val('')
-        $totalOrderNum.val('')
-        $transportationExpenses.val('')
-        $otherTransportationExpenses.val('')
-        $formTable.find('tbody').empty()
-        if (curYearMonthData) {
-          $totalAmount.val(curYearMonthData.totalAmount)
-          $totalOrderNum.val(curYearMonthData.totalOrderNum)
-          $transportationExpenses.val(curYearMonthData.transportationExpenses)
-          $otherTransportationExpenses.val(curYearMonthData.otherTransportationExpenses)
-          if (curYearMonthData.products) {
-            curYearMonthData.products.forEach(function (product, index) {
-              console.log('product===', product, index)
-              $addBtn.trigger('click')
-              const $productTr = $formTable.find('tbody').children('tr').eq(index)
-              $productTr.find('.name-input').val(product.name)
-              $productTr.find('.amount-input').val(product.amount)
-              $productTr.find('.number-input').val(product.num)
-              $productTr.find('.packing-cost-input').val(product.packingCost)
-              if (product.sku) {
-                const $addSkuBtn = $productTr.find('.sku-add-btn')
-                const $skuList = $productTr.find('.sku-list')
-                product.sku.forEach(function (skuItem, skuIndex) {
-                  let $skuTr = $productTr.find('.sku-item').eq(skuIndex)
-                  if (!$skuTr.length) {
-                    $addSkuBtn.trigger('click')
-                    $skuTr = $productTr.find('.sku-item').eq(skuIndex)
-                  }
-                  $skuTr.find('.sku-name-input').val(skuItem.skuName)
-                  $skuTr.find('.sku-number-input').val(skuItem.skuNumber)
-                  $skuTr.find('.sku-prime-input').val(skuItem.skuPrime)
-                })
-              }
-            })
+        $formTable.delegate('.delete-btn', 'click', function () {
+          const $btn = $(this)
+          $btn.closest('tr').remove()
+        }).delegate('.sku-add-btn', 'click', function () {
+          const $btn = $(this)
+          const $tr = $btn.closest('tr')
+          const $skuList = $tr.find('.sku-list')
+          $skuList.append(skuItemTmpl)
+        }).delegate('.sku-delete-btn', 'click', function () {
+          const $deleteBtn = $(this)
+          $deleteBtn.closest('.sku-item').remove()
+        }).delegate('.sku-up-btn', 'click', function () {
+          const $btn = $(this)
+          const $skuTr = $btn.closest('.sku-item')
+          const skuIndex = $skuTr.index()
+          if (skuIndex > 0) {
+            $skuTr.insertBefore($skuTr.prev())
           }
-        } else {
-          $addBtn.trigger('click')
-        }
-      })
-
-      $calcBtn.on('click', function () {
-        let dataList = []
-        const $productTrs = $formTable.find('tbody').children('tr')
-        let totalSkuCost = 0
-        const totalAmount = $totalAmount.val()
-        let totalCalcAmount = 0
-        let totalOrderNum = $totalOrderNum.val()
-        totalOrderNum = totalOrderNum ? Number(totalOrderNum) : 0
-        let transportationExpenses = $transportationExpenses.val()
-        transportationExpenses = transportationExpenses ? Number(transportationExpenses) : 0
-        let otherTransportationExpenses = $otherTransportationExpenses.val()
-        otherTransportationExpenses = otherTransportationExpenses ? Number(otherTransportationExpenses) : 0
-        let totalIncome = totalAmount ? Number(totalAmount) : 0
-        
-        $productTrs.each(function (index, tr) {
-          let dataListItem = {}
-          const $tr = $(tr)
-          const $nameInput = $tr.find('.name-input')
-          const $amountInput = $tr.find('.amount-input')
-          const $numberInput = $tr.find('.number-input')
-          const $packingCostInput = $tr.find('.packint-cost-input')
-          const $skuItems = $tr.find('.sku-list .sku-item')
-          let name = $nameInput.val()
-          let amount = $amountInput.val()
-          let num = $numberInput.val()
-          let packingCost = $packingCostInput.val()
-          amount = amount ? Number(amount) : 0
-          num = num ? Number(num) : 0
-          packingCost = packingCost ? Number(packingCost) : 0
-          let skuCost = 0
-          let dataListItemSku = []
-          $skuItems.each(function (skuIndex, skuItem) {
-            const $skuItem = $(skuItem)
-            const $skuNameInput = $skuItem.find('.sku-name-input')
-            const $skuPrimeInput = $skuItem.find('.sku-prime-input')
-            const $skuNumberInput = $skuItem.find('.sku-number-input')
-            const skuName = $skuNameInput.val()
-            let skuPrime = $skuPrimeInput.val()
-            let skuNumber = $skuNumberInput.val()
-            skuPrime = skuPrime ? Number(skuPrime) : 0
-            skuNumber = skuNumber ? Number(skuNumber) : 0
-            // console.log('skuPrime===', skuPrime)
-            // console.log('skuNumber===', skuNumber)
-            const skuItemCost = new Big(skuPrime).times(new Big(skuNumber)).toNumber()
-            skuCost = new Big(skuCost).add(skuItemCost).toNumber()
-            dataListItemSku.push({
-              skuName,
-              skuPrime,
-              skuNumber
-            })
-          })
-          Object.assign(dataListItem, {
-            name,
-            amount,
-            num,
-            packingCost,
-            sku: dataListItemSku
-          })
-          dataList.push(dataListItem)
-          // console.log('skuCost===', skuCost)
-          totalSkuCost = new Big(totalSkuCost).add(skuCost).toNumber()
-          totalCalcAmount = new Big(totalCalcAmount).add(amount).toNumber()
-          if (!totalAmount) {
-            const productPackingCost = new Big(packingCost).times(num).toNumber()
-            // const productIncome = amount - (packingCost * num) - skuCost
-            const productIncome = new Big(amount).minus(productPackingCost).minus(skuCost).toNumber()
-            // console.log('productIncome===', productIncome)
-            $tr.find('.income-span').html(productIncome)
-            // totalIncome += productIncome
-            totalIncome = new Big(totalIncome).add(productIncome).toNumber()
+        }).delegate('.sku-down-btn', 'click', function () {
+          const $btn = $(this)
+          const $skuTr = $btn.closest('.sku-item')
+          const skuIndex = $skuTr.index()
+          const skuNum = $skuTr.parent().children('.sku-item').length
+          if (skuIndex < skuNum - 1) {
+            $skuTr.insertAfter($skuTr.next())
           }
         })
-        console.log('dataList===', dataList)
-        console.log('totalSkuCost===', totalSkuCost)
-        $totalPrime.html(totalSkuCost)
-        $totalCalcAmount.html(totalCalcAmount)
-        if (totalAmount) {
-          // totalIncome -= totalSkuCost
-          console.log('in=================')
-          totalIncome = new Big(totalIncome).minus(totalSkuCost).toNumber()
-        }
-        if (transportationExpenses) {
-          totalIncome = new Big(totalIncome).minus(transportationExpenses).toNumber()
-        }
-        if (otherTransportationExpenses) {
-          totalIncome = new Big(totalIncome).minus(otherTransportationExpenses).toNumber()
-        }
-        // 是否剔除包装支出
-        if ($removePackingCost.prop('checked')) {
-          const totalPackingCost = new Big(totalOrderNum).times(0.2)
-          totalIncome = new Big(totalIncome).minus(totalPackingCost).toNumber()
-          $removePackingCostSpan.html(`${totalOrderNum}×0.2=${totalPackingCost}`)
-        }
-        // 是否剔除售后支出
-        if ($removeCustomerServiceCost.prop('checked')) {
-          const customerServiceCost = new Big(totalOrderNum).times(0.15)
-          totalIncome = new Big(totalIncome).minus(customerServiceCost).toNumber()
-          $removeCustomerServiceCostSpan.html(`${totalOrderNum}×0.15=${customerServiceCost}`)
-        }
-        $totalProfit.html(totalIncome)
-        console.log('totalIncome===', totalIncome)
-        const yearMonth = $yearMonth.val()
-        let cacheDataStr = localStorage.getItem('cacheData')
-        let cacheData = cacheDataStr ? JSON.parse(cacheDataStr) : {}
-        cacheData[yearMonth] = {
-          totalAmount: $totalAmount.val(),
-          totalOrderNum: $totalOrderNum.val(),
-          transportationExpenses: $transportationExpenses.val(),
-          otherTransportationExpenses: $otherTransportationExpenses.val(),
-          products: dataList
-        }
-        console.log('cacheData===', cacheData)
-        localStorage.setItem('cacheData', JSON.stringify(cacheData))
-      })
 
-      $yearMonth.trigger('change')
+        $yearMonth.on('change', function () {
+          $removePackingCostSpan.empty()
+          $removeCustomerServiceCostSpan.empty()
+          $totalCalcAmount.empty()
+          $totalPrime.empty()
+          $totalProfit.empty()
+          const yearMonth = $yearMonth.val()
+          let cacheData = {}
+          const cacheDataStr = localStorage.getItem('cacheData')
+          if (cacheDataStr) {
+            cacheData = JSON.parse(cacheDataStr)
+          } else {
+            cacheData = defaultCacheData
+          }
+          // console.log('cacheDataStr===', cacheDataStr)
+          let curYearMonthData = cacheData[yearMonth]
+          console.log('cacheData===', cacheData)
+          $totalAmount.val('')
+          $totalOrderNum.val('')
+          $transportationExpenses.val('')
+          $otherTransportationExpenses.val('')
+          $formTable.find('tbody').empty()
+          if (curYearMonthData) {
+            $totalAmount.val(curYearMonthData.totalAmount)
+            $totalOrderNum.val(curYearMonthData.totalOrderNum)
+            $transportationExpenses.val(curYearMonthData.transportationExpenses)
+            $otherTransportationExpenses.val(curYearMonthData.otherTransportationExpenses)
+            if (curYearMonthData.products) {
+              curYearMonthData.products.forEach(function (product, index) {
+                console.log('product===', product, index)
+                $addBtn.trigger('click')
+                const $productTr = $formTable.find('tbody').children('tr').eq(index)
+                $productTr.find('.name-input').val(product.name)
+                $productTr.find('.amount-input').val(product.amount)
+                $productTr.find('.number-input').val(product.num)
+                $productTr.find('.packing-cost-input').val(product.packingCost)
+                if (product.sku) {
+                  const $addSkuBtn = $productTr.find('.sku-add-btn')
+                  const $skuList = $productTr.find('.sku-list')
+                  product.sku.forEach(function (skuItem, skuIndex) {
+                    let $skuTr = $productTr.find('.sku-item').eq(skuIndex)
+                    if (!$skuTr.length) {
+                      $addSkuBtn.trigger('click')
+                      $skuTr = $productTr.find('.sku-item').eq(skuIndex)
+                    }
+                    $skuTr.find('.sku-name-input').val(skuItem.skuName)
+                    $skuTr.find('.sku-number-input').val(skuItem.skuNumber)
+                    $skuTr.find('.sku-prime-input').val(skuItem.skuPrime)
+                  })
+                }
+              })
+            }
+          } else {
+            $addBtn.trigger('click')
+          }
+        })
+
+        $calcBtn.on('click', function () {
+          let dataList = []
+          const $productTrs = $formTable.find('tbody').children('tr')
+          let totalSkuCost = 0
+          const totalAmount = $totalAmount.val()
+          let totalCalcAmount = 0
+          let totalOrderNum = $totalOrderNum.val()
+          totalOrderNum = totalOrderNum ? Number(totalOrderNum) : 0
+          let transportationExpenses = $transportationExpenses.val()
+          transportationExpenses = transportationExpenses ? Number(transportationExpenses) : 0
+          let otherTransportationExpenses = $otherTransportationExpenses.val()
+          otherTransportationExpenses = otherTransportationExpenses ? Number(otherTransportationExpenses) : 0
+          let totalIncome = totalAmount ? Number(totalAmount) : 0
+          
+          $productTrs.each(function (index, tr) {
+            let dataListItem = {}
+            const $tr = $(tr)
+            const $nameInput = $tr.find('.name-input')
+            const $amountInput = $tr.find('.amount-input')
+            const $numberInput = $tr.find('.number-input')
+            const $packingCostInput = $tr.find('.packint-cost-input')
+            const $skuItems = $tr.find('.sku-list .sku-item')
+            let name = $nameInput.val()
+            let amount = $amountInput.val()
+            let num = $numberInput.val()
+            let packingCost = $packingCostInput.val()
+            amount = amount ? Number(amount) : 0
+            num = num ? Number(num) : 0
+            packingCost = packingCost ? Number(packingCost) : 0
+            let skuCost = 0
+            let dataListItemSku = []
+            $skuItems.each(function (skuIndex, skuItem) {
+              const $skuItem = $(skuItem)
+              const $skuNameInput = $skuItem.find('.sku-name-input')
+              const $skuPrimeInput = $skuItem.find('.sku-prime-input')
+              const $skuNumberInput = $skuItem.find('.sku-number-input')
+              const skuName = $skuNameInput.val()
+              let skuPrime = $skuPrimeInput.val()
+              let skuNumber = $skuNumberInput.val()
+              skuPrime = skuPrime ? Number(skuPrime) : 0
+              skuNumber = skuNumber ? Number(skuNumber) : 0
+              // console.log('skuPrime===', skuPrime)
+              // console.log('skuNumber===', skuNumber)
+              const skuItemCost = new Big(skuPrime).times(new Big(skuNumber)).toNumber()
+              skuCost = new Big(skuCost).add(skuItemCost).toNumber()
+              dataListItemSku.push({
+                skuName,
+                skuPrime,
+                skuNumber
+              })
+            })
+            Object.assign(dataListItem, {
+              name,
+              amount,
+              num,
+              packingCost,
+              sku: dataListItemSku
+            })
+            dataList.push(dataListItem)
+            // console.log('skuCost===', skuCost)
+            totalSkuCost = new Big(totalSkuCost).add(skuCost).toNumber()
+            totalCalcAmount = new Big(totalCalcAmount).add(amount).toNumber()
+            if (!totalAmount) {
+              const productPackingCost = new Big(packingCost).times(num).toNumber()
+              // const productIncome = amount - (packingCost * num) - skuCost
+              const productIncome = new Big(amount).minus(productPackingCost).minus(skuCost).toNumber()
+              // console.log('productIncome===', productIncome)
+              $tr.find('.income-span').html(productIncome)
+              // totalIncome += productIncome
+              totalIncome = new Big(totalIncome).add(productIncome).toNumber()
+            }
+          })
+          console.log('dataList===', dataList)
+          console.log('totalSkuCost===', totalSkuCost)
+          $totalPrime.html(totalSkuCost)
+          $totalCalcAmount.html(totalCalcAmount)
+          if (totalAmount) {
+            // totalIncome -= totalSkuCost
+            console.log('in=================')
+            totalIncome = new Big(totalIncome).minus(totalSkuCost).toNumber()
+          }
+          if (transportationExpenses) {
+            totalIncome = new Big(totalIncome).minus(transportationExpenses).toNumber()
+          }
+          if (otherTransportationExpenses) {
+            totalIncome = new Big(totalIncome).minus(otherTransportationExpenses).toNumber()
+          }
+          // 是否剔除包装支出
+          if ($removePackingCost.prop('checked')) {
+            const totalPackingCost = new Big(totalOrderNum).times(0.2)
+            totalIncome = new Big(totalIncome).minus(totalPackingCost).toNumber()
+            $removePackingCostSpan.html(`${totalOrderNum}×0.2=${totalPackingCost}`)
+          }
+          // 是否剔除售后支出
+          if ($removeCustomerServiceCost.prop('checked')) {
+            const customerServiceCost = new Big(totalOrderNum).times(0.15)
+            totalIncome = new Big(totalIncome).minus(customerServiceCost).toNumber()
+            $removeCustomerServiceCostSpan.html(`${totalOrderNum}×0.15=${customerServiceCost}`)
+          }
+          $totalProfit.html(totalIncome)
+          console.log('totalIncome===', totalIncome)
+          const yearMonth = $yearMonth.val()
+          let cacheDataStr = localStorage.getItem('cacheData')
+          let cacheData = cacheDataStr ? JSON.parse(cacheDataStr) : {}
+          cacheData[yearMonth] = {
+            totalAmount: $totalAmount.val(),
+            totalOrderNum: $totalOrderNum.val(),
+            transportationExpenses: $transportationExpenses.val(),
+            otherTransportationExpenses: $otherTransportationExpenses.val(),
+            products: dataList
+          }
+          console.log('cacheData===', cacheData)
+          localStorage.setItem('cacheData', JSON.stringify(cacheData))
+        })
+      }
+      
+      function initVConsole () {
+        if (window.VConsole) {
+          const vConsole = new window.VConsole()
+        }
+      }
+
+      function init () {
+        initVConsole()
+        initEvent()
+        $yearMonth.trigger('change')
+      }
+
+      init()
 
     })
   </script>
