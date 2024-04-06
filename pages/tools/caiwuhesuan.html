@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>财务结算</title>
+  <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.7.1/jquery.js"></script>
+  <script src="https://cdn.bootcdn.net/ajax/libs/big.js/6.2.1/big.js"></script>
+  <style>
+    * {
+      padding: 0;
+      margin: 0;
+    }
+    .wrapper {
+      padding: 20px;
+    }
+    .flex {
+      display: flex;
+    }
+    .flex-item {
+      margin: 0 20px 20px 0;
+    }
+    .btn-large {
+      padding: 5px 10px;
+      border: 0;
+      border-radius: 10px;
+      background-color: #3c3cdb;
+      color: #fff;
+      font-size: 20px;
+      cursor: pointer;
+    }
+    .top-area {
+      flex-wrap: wrap;
+    }
+    .top-input {
+      width: 100px;
+    }
+    .form-item {
+      margin-bottom: 20px;
+    }
+    .top-strong-el {
+      font-size: 20px;
+      font-weight: 400;
+    }
+    #totalCalcAmount {
+      color: #333;
+    }
+    #totalProfit {
+      color: #f00;
+    }
+    #totalPrime {
+      color: #00f;
+    }
+    .form-table {
+      border: 1px solid #333;
+      border-collapse: collapse;
+    }
+    .form-table th,
+    .form-table td {
+      padding: 2px;
+      border: 1px solid #333;
+      vertical-align: top;
+    }
+    .form-table th {
+      text-align: left;
+    }
+    .sku-item {
+      margin-bottom: 5px;
+    }
+    .sku-input {
+      width: 50px;
+    }
+    .name-input {
+      width: 100px;
+    }
+    .amount-input {
+      width: 80px;
+    }
+    .number-input {
+      width: 50px;
+    }
+    .packing-cost-input {
+      width: 30px;
+    }
+    .sku-detail {
+      margin-right: 10px;
+    }
+    .sku-up-btn,
+    .sku-down-btn {
+      padding: 0 5px;
+      margin-left: 3px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="form-item">
+      <div class="top-area">
+        <div class="flex">
+
+          <div class="flex-item">
+            <label for="">时间：</label>
+            <select id="yearMonth">
+              <option value="2024-1">2024-1</option>
+              <option value="2024-2">2024-2</option>
+              <option value="2024-3">2024-3</option>
+              <option value="2024-4">2024-4</option>
+              <option value="2024-5">2024-5</option>
+              <option value="2024-6">2024-6</option>
+              <option value="2024-7">2024-7</option>
+              <option value="2024-8">2024-8</option>
+              <option value="2024-9">2024-9</option>
+              <option value="2024-10">2024-10</option>
+              <option value="2024-11">2024-11</option>
+              <option value="2024-12">2024-12</option>
+            </select>
+          </div>
+          <div class="flex-item">
+            <label for="">总支付金额：</label>
+            <input type="text" class="top-input" id="totalAmount">
+          </div>
+          <div class="flex-item">
+            <label for="">总订单数：</label>
+            <input type="text" class="top-input" id="totalOrderNum">
+          </div>
+          <div class="flex-item">
+            <label for="">运费：</label>
+            <input type="text" class="top-input" id="transportationExpenses">
+          </div>
+          <div class="flex-item">
+            <label for="">额外运费：</label>
+            <input type="text" class="top-input" id="otherTransportationExpenses">
+          </div>
+        </div>
+
+        <div class="flex">
+          <div class="flex-item">
+            <label for="removePackingCost">
+              <input type="checkbox" name="" id="removePackingCost">
+              <span>剔除包装支出（<span class="top-strong-el" id="removePackingCostSpan"></span>）</span>
+            </label>
+          </div>
+          <div class="flex-item">
+            <label for="removeCustomerServiceCost">
+              <input type="checkbox" name="" id="removeCustomerServiceCost">
+              <span>剔除售后支出（<span class="top-strong-el" id="removeCustomerServiceCostSpan"></span>）</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="flex">
+          <div class="flex-item">
+            <label for="">总支付金额(计算值)：</label>
+            <span class="top-strong-el" id="totalCalcAmount"></span>
+          </div>
+          <div class="flex-item">
+            <label for="">总成本：</label>
+            <span class="top-strong-el" id="totalPrime"></span>
+          </div>
+          <div class="flex-item">
+            <label for="">盈亏：</label>
+            <span class="top-strong-el" id="totalProfit"></span>
+          </div>
+        </div>
+        
+      </div>
+    </div>
+    <div class="form-item">
+      <button class="btn-large" id="calcBtn">计算</button>
+    </div>
+    <div class="form-item">
+      <table class="form-table">
+        <thead>
+          <tr>
+            <th>产品</th>
+            <th>支付金额</th>
+            <th>支付件数</th>
+            <th>包装单价</th>
+            <th>盈亏</th>
+            <th>sku</th>
+            <th>
+              <div class="flex">
+                <button id="formTableAddBtn">add</button>
+              </div>
+            </th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+  <script>
+    $(function () {
+      const defaultCacheData = {
+        "2024-1": {
+          totalAmount: "100",
+          totalOrderNum: "",
+          transportationExpenses: "20",
+          otherTransportationExpenses: "10",
+          products: [
+            {
+              name: "产品1",
+              amount: 50,
+              num: 20,
+              packingCost: 0,
+              sku: [
+                {
+                  skuName: "sku1",
+                  skuPrime: 2,
+                  skuNumber: 3,
+                },
+                {
+                  skuName: "sku2",
+                  skuPrime: 3,
+                  skuNumber: 4,
+                },
+              ],
+            },
+            {
+              name: "产品2",
+              amount: 30,
+              num: 10,
+              packingCost: 0,
+              sku: [
+                {
+                  skuName: "sku3",
+                  skuPrime: 4,
+                  skuNumber: 5,
+                },
+              ],
+            },
+          ],
+        },
+        "2024-2": {
+          totalAmount: "",
+          totalOrderNum: "2370",
+          transportationExpenses: "4209",
+          otherTransportationExpenses: "420.2",
+          products: [
+            {
+              name: "魔方-马卡龙",
+              amount: 4024.74,
+              num: 610,
+              packingCost: 0,
+              sku: [
+                {
+                  skuName: "二阶",
+                  skuPrime: 3.2,
+                  skuNumber: 134,
+                },
+                {
+                  skuName: "三阶",
+                  skuPrime: 2.5,
+                  skuNumber: 295,
+                },
+                {
+                  skuName: "四阶",
+                  skuPrime: 8.5,
+                  skuNumber: 17,
+                },
+                {
+                  skuName: "五阶",
+                  skuPrime: 9.5,
+                  skuNumber: 13,
+                },
+                {
+                  skuName: "七阶-实色",
+                  skuPrime: 27.5,
+                  skuNumber: 2,
+                },
+                {
+                  skuName: "圣手-马卡龙",
+                  skuPrime: 2.3,
+                  skuNumber: 30,
+                },
+                {
+                  skuName: "圣手-实色",
+                  skuPrime: 2.3,
+                  skuNumber: 14,
+                },
+                {
+                  skuName: "2+3阶",
+                  skuPrime: 5.7,
+                  skuNumber: 38,
+                },
+                {
+                  skuName: "3+4阶",
+                  skuPrime: 11,
+                  skuNumber: 10,
+                },
+                {
+                  skuName: "2+3+4+5+金字塔",
+                  skuPrime: 28.2,
+                  skuNumber: 15,
+                },
+              ],
+            },
+            {
+              name: "钟表",
+              amount: 5107.13,
+              num: 1503,
+              packingCost: 0,
+              sku: [
+                {
+                  skuName: "钟表",
+                  skuPrime: 1.55,
+                  skuNumber: 1503,
+                },
+              ],
+            },
+            {
+              name: "魔方-实色",
+              amount: 1346.74,
+              num: 238,
+              packingCost: 0,
+              sku: [
+                {
+                  skuName: "二阶",
+                  skuPrime: 3.2,
+                  skuNumber: 16,
+                },
+                {
+                  skuName: "三阶",
+                  skuPrime: 2.5,
+                  skuNumber: 122,
+                },
+                {
+                  skuName: "四阶",
+                  skuPrime: 8.5,
+                  skuNumber: 12,
+                },
+                {
+                  skuName: "五阶",
+                  skuPrime: 9.5,
+                  skuNumber: 4,
+                },
+                {
+                  skuName: "金字塔",
+                  skuPrime: 4.5,
+                  skuNumber: 1,
+                },
+                {
+                  skuName: "圣手-马卡龙",
+                  skuPrime: 2.3,
+                  skuNumber: 23,
+                },
+                {
+                  skuName: "圣手-实色",
+                  skuPrime: 2.3,
+                  skuNumber: 39,
+                },
+                {
+                  skuName: "2+3阶",
+                  skuPrime: 5.7,
+                  skuNumber: 6,
+                },
+                {
+                  skuName: "2+4阶",
+                  skuPrime: 11.7,
+                  skuNumber: 2,
+                },
+                {
+                  skuName: "2+3+4+5阶",
+                  skuPrime: 23.7,
+                  skuNumber: 3,
+                },
+              ],
+            },
+            {
+              name: "彩虹圈",
+              amount: 1621.1,
+              num: 403,
+              packingCost: 0,
+              sku: [
+                {
+                  skuName: "大号-闪亮",
+                  skuPrime: 2.15,
+                  skuNumber: 144,
+                },
+                {
+                  skuName: "大号-台湾",
+                  skuPrime: 2.15,
+                  skuNumber: 125,
+                },
+                {
+                  skuName: "中号-闪亮",
+                  skuPrime: 1.5,
+                  skuNumber: 52,
+                },
+                {
+                  skuName: "中号-台湾",
+                  skuPrime: 1.5,
+                  skuNumber: 82,
+                },
+              ],
+            },
+            {
+              name: "兔子陷阱",
+              amount: 265.38,
+              num: 27,
+              packingCost: 0,
+              sku: [
+                {
+                  skuName: "带地图",
+                  skuPrime: 9,
+                  skuNumber: 21,
+                },
+                {
+                  skuName: "无地图",
+                  skuPrime: 6,
+                  skuNumber: 3,
+                },
+                {
+                  skuName: "磁力",
+                  skuPrime: 6,
+                  skuNumber: 1,
+                },
+                {
+                  skuName: "智力锁",
+                  skuPrime: 1.9,
+                  skuNumber: 1,
+                },
+                {
+                  skuName: "变脸",
+                  skuPrime: 5.7,
+                  skuNumber: 0,
+                },
+                {
+                  skuName: "马卡龙魔尺24段",
+                  skuPrime: 3.8,
+                  skuNumber: 1,
+                },
+              ],
+            },
+            {
+              name: "平衡太空人",
+              amount: 229.04,
+              num: 31,
+              packingCost: 0,
+              sku: [
+                {
+                  skuName: "蓝色",
+                  skuPrime: 3.5,
+                  skuNumber: 21,
+                },
+                {
+                  skuName: "黄色",
+                  skuPrime: 3.5,
+                  skuNumber: 8,
+                },
+                {
+                  skuName: "智力锁",
+                  skuPrime: 1.9,
+                  skuNumber: 1,
+                },
+                {
+                  skuName: "俄罗斯",
+                  skuPrime: 2,
+                  skuNumber: 1,
+                },
+                {
+                  skuName: "24段魔尺",
+                  skuPrime: 3.8,
+                  skuNumber: 0,
+                },
+                {
+                  skuName: "马卡龙三阶",
+                  skuPrime: 2.5,
+                  skuNumber: 0,
+                },
+              ],
+            },
+            {
+              name: "翻花绳",
+              amount: 734.14,
+              num: 294,
+              packingCost: 0,
+              sku: [
+                {
+                  skuName: "5条",
+                  skuPrime: 1.9,
+                  skuNumber: 148,
+                },
+                {
+                  skuName: "1条",
+                  skuPrime: 0.38,
+                  skuNumber: 146,
+                },
+              ],
+            },
+            {
+              name: "魔法球",
+              amount: 217.24,
+              num: 21,
+              packingCost: 0,
+              sku: [
+                {
+                  skuName: "8孔",
+                  skuPrime: 3.7,
+                  skuNumber: 2,
+                },
+                {
+                  skuName: "12孔",
+                  skuPrime: 3.9,
+                  skuNumber: 10,
+                },
+                {
+                  skuName: "20孔",
+                  skuPrime: 10,
+                  skuNumber: 9,
+                },
+              ],
+            },
+          ],
+        },
+        "2024-3": {
+          totalAmount: "",
+          totalOrderNum: "4376",
+          transportationExpenses: "8380",
+          otherTransportationExpenses: "",
+          products: [
+            {
+              name: "魔方-马卡龙",
+              amount: 4626.93,
+              num: 915,
+              packingCost: 0,
+              sku: [
+                {
+                  skuName: "二阶",
+                  skuPrime: 3.2,
+                  skuNumber: 87,
+                },
+                {
+                  skuName: "三阶",
+                  skuPrime: 2.5,
+                  skuNumber: 526,
+                },
+                {
+                  skuName: "四阶",
+                  skuPrime: 8.5,
+                  skuNumber: 20,
+                },
+                {
+                  skuName: "五阶",
+                  skuPrime: 9.5,
+                  skuNumber: 6,
+                },
+                {
+                  skuName: "金字塔",
+                  skuPrime: 4.5,
+                  skuNumber: 3,
+                },
+                {
+                  skuName: "圣手-马卡龙",
+                  skuPrime: 2.3,
+                  skuNumber: 117,
+                },
+                {
+                  skuName: "圣手-实色",
+                  skuPrime: 2.3,
+                  skuNumber: 74,
+                },
+                {
+                  skuName: "2+3阶",
+                  skuPrime: 5.7,
+                  skuNumber: 19,
+                },
+                {
+                  skuName: "3+4阶",
+                  skuPrime: 11,
+                  skuNumber: 21,
+                },
+                {
+                  skuName: "2+3+4+5+金字塔",
+                  skuPrime: 28.2,
+                  skuNumber: 24,
+                },
+              ],
+            },
+            {
+              name: "钟表",
+              amount: 8900.5,
+              num: 2609,
+              packingCost: 0,
+              sku: [
+                {
+                  skuName: "钟表",
+                  skuPrime: 1.55,
+                  skuNumber: 2609,
+                },
+              ],
+            },
+            {
+              name: "魔方-实色",
+              amount: 1161.76,
+              num: 301,
+              packingCost: 0,
+              sku: [
+                {
+                  skuName: "二阶",
+                  skuPrime: 3.2,
+                  skuNumber: 13,
+                },
+                {
+                  skuName: "三阶",
+                  skuPrime: 2.5,
+                  skuNumber: 232,
+                },
+                {
+                  skuName: "四阶",
+                  skuPrime: 8.5,
+                  skuNumber: 2,
+                },
+                {
+                  skuName: "五阶",
+                  skuPrime: 9.5,
+                  skuNumber: 1,
+                },
+                {
+                  skuName: "金字塔",
+                  skuPrime: 4.5,
+                  skuNumber: 4,
+                },
+                {
+                  skuName: "2+4阶",
+                  skuPrime: 11.7,
+                  skuNumber: 2,
+                },
+                {
+                  skuName: "3+4阶",
+                  skuPrime: 11,
+                  skuNumber: 6,
+                },
+                {
+                  skuName: "4+5阶",
+                  skuPrime: 18,
+                  skuNumber: 1,
+                },
+                {
+                  skuName: "圣手-马卡龙",
+                  skuPrime: 2.3,
+                  skuNumber: 9,
+                },
+                {
+                  skuName: "圣手-实色",
+                  skuPrime: 2.3,
+                  skuNumber: 27,
+                },
+              ],
+            },
+            {
+              name: "彩虹圈",
+              amount: 2249.35,
+              num: 556,
+              packingCost: 0,
+              sku: [
+                {
+                  skuName: "大号-闪亮",
+                  skuPrime: 2.15,
+                  skuNumber: 217,
+                },
+                {
+                  skuName: "大号-台湾",
+                  skuPrime: 2.15,
+                  skuNumber: 146,
+                },
+                {
+                  skuName: "中号-闪亮",
+                  skuPrime: 1.5,
+                  skuNumber: 104,
+                },
+                {
+                  skuName: "中号-台湾",
+                  skuPrime: 1.5,
+                  skuNumber: 89,
+                },
+              ],
+            },
+            {
+              name: "翻花绳",
+              amount: 4862.65,
+              num: 2120,
+              packingCost: 0,
+              sku: [
+                {
+                  skuName: "5条",
+                  skuPrime: 1.9,
+                  skuNumber: 996,
+                },
+                {
+                  skuName: "2条",
+                  skuPrime: 0.76,
+                  skuNumber: 72,
+                },
+                {
+                  skuName: "1条",
+                  skuPrime: 0.38,
+                  skuNumber: 1052,
+                },
+              ],
+            },
+            {
+              name: "平衡太空人",
+              amount: 171.42,
+              num: 31,
+              packingCost: 0,
+              sku: [
+                {
+                  skuName: "蓝色",
+                  skuPrime: 3.5,
+                  skuNumber: 18,
+                },
+                {
+                  skuName: "黄色",
+                  skuPrime: 3.5,
+                  skuNumber: 12,
+                },
+                {
+                  skuName: "三阶-马卡龙",
+                  skuPrime: 2.5,
+                  skuNumber: 1,
+                },
+              ],
+            },
+            {
+              name: "兔子陷阱",
+              amount: 32.34,
+              num: 3,
+              packingCost: 0,
+              sku: [
+                {
+                  skuName: "带地图",
+                  skuPrime: 9,
+                  skuNumber: 3,
+                },
+                {
+                  skuName: "无地图",
+                  skuPrime: 6,
+                  skuNumber: 0,
+                },
+              ],
+            },
+            {
+              name: "彩虹球",
+              amount: 225.23,
+              num: 27,
+              packingCost: 0,
+              sku: [
+                {
+                  skuName: "8孔",
+                  skuPrime: 3.7,
+                  skuNumber: 8,
+                },
+                {
+                  skuName: "12孔",
+                  skuPrime: 3.9,
+                  skuNumber: 14,
+                },
+                {
+                  skuName: "20孔",
+                  skuPrime: 10,
+                  skuNumber: 5,
+                },
+              ],
+            },
+          ],
+        },
+      }
+      const skuItemTmpl = `
+        <div class="sku-item flex">
+          <div class="sku-detail flex">
+            <label for="">sku名：</label>
+            <input type="text" class="sku-input sku-name-input">
+          </div>
+          <div class="sku-detail flex">
+            <label for="">sku成本：</label>
+            <input type="text" class="sku-input sku-prime-input">
+          </div>
+          <div class="sku-detail flex">
+            <label for="">sku数量：</label>
+            <input type="text" class="sku-input sku-number-input">
+          </div>
+          <div class="sku-detail flex">
+            <button class="sku-btn sku-delete-btn">delete sku</button>
+            <button class="sku-btn sku-up-btn">↑</button>
+            <button class="sku-btn sku-down-btn">↓</button>
+          </div>
+        </div>
+      `
+      const trTmpl = `
+        <tr>
+          <td>
+            <input type="text" class="form-input name-input">
+          </td>
+          <td>
+            <input type="text" class="form-input amount-input">
+          </td>
+          <td>
+            <input type="text" class="form-input number-input">
+          </td>
+          <td>
+            <input type="text" class="form-input packing-cost-input">
+          </td>
+          <td>
+            <span class="form-span income-span"></span>
+          </td>
+          <td>
+            <div class="sku-list">
+              ${skuItemTmpl}
+            </div>
+          </td>
+          <td>
+            <button class="delete-btn">delete</button>
+            <button class="sku-add-btn">add sku</button>
+          </td>
+        </tr>
+      `
+      const $yearMonth = $('#yearMonth')
+      const $totalAmount = $('#totalAmount')
+      const $totalCalcAmount = $('#totalCalcAmount')
+      const $totalPrime = $('#totalPrime')
+      const $totalOrderNum = $('#totalOrderNum')
+      const $transportationExpenses = $('#transportationExpenses')
+      const $otherTransportationExpenses = $('#otherTransportationExpenses')
+      const $totalProfit = $('#totalProfit')
+      const $removePackingCost = $('#removePackingCost')
+      const $removePackingCostSpan = $('#removePackingCostSpan')
+      const $removeCustomerServiceCost = $('#removeCustomerServiceCost')
+      const $removeCustomerServiceCostSpan = $('#removeCustomerServiceCostSpan')
+      const $formTable = $('.form-table')
+      const $addBtn = $('#formTableAddBtn')
+      const $trs = $formTable.find('tbody tr')
+      const $calcBtn = $('#calcBtn')
+      
+      $addBtn.on('click', function () {
+        $formTable.find('tbody').append(trTmpl)
+      }).trigger('click')
+
+      $formTable.delegate('.delete-btn', 'click', function () {
+        const $btn = $(this)
+        $btn.closest('tr').remove()
+      }).delegate('.sku-add-btn', 'click', function () {
+        const $btn = $(this)
+        const $tr = $btn.closest('tr')
+        const $skuList = $tr.find('.sku-list')
+        $skuList.append(skuItemTmpl)
+      }).delegate('.sku-delete-btn', 'click', function () {
+        const $deleteBtn = $(this)
+        $deleteBtn.closest('.sku-item').remove()
+      }).delegate('.sku-up-btn', 'click', function () {
+        const $btn = $(this)
+        const $skuTr = $btn.closest('.sku-item')
+        const skuIndex = $skuTr.index()
+        if (skuIndex > 0) {
+          $skuTr.insertBefore($skuTr.prev())
+        }
+      }).delegate('.sku-down-btn', 'click', function () {
+        const $btn = $(this)
+        const $skuTr = $btn.closest('.sku-item')
+        const skuIndex = $skuTr.index()
+        const skuNum = $skuTr.parent().children('.sku-item').length
+        if (skuIndex < skuNum - 1) {
+          $skuTr.insertAfter($skuTr.next())
+        }
+      })
+
+      $yearMonth.on('change', function () {
+        $removePackingCostSpan.empty()
+        $removeCustomerServiceCostSpan.empty()
+        $totalCalcAmount.empty()
+        $totalPrime.empty()
+        $totalProfit.empty()
+        const yearMonth = $yearMonth.val()
+        let cacheData = {}
+        const cacheDataStr = localStorage.getItem('cacheData')
+        if (cacheDataStr) {
+          cacheData = JSON.parse(cacheDataStr)
+        } else {
+          cacheData = defaultCacheData
+        }
+        // console.log('cacheDataStr===', cacheDataStr)
+        let curYearMonthData = cacheData[yearMonth]
+        console.log('cacheData===', cacheData)
+        $totalAmount.val('')
+        $totalOrderNum.val('')
+        $transportationExpenses.val('')
+        $otherTransportationExpenses.val('')
+        $formTable.find('tbody').empty()
+        if (curYearMonthData) {
+          $totalAmount.val(curYearMonthData.totalAmount)
+          $totalOrderNum.val(curYearMonthData.totalOrderNum)
+          $transportationExpenses.val(curYearMonthData.transportationExpenses)
+          $otherTransportationExpenses.val(curYearMonthData.otherTransportationExpenses)
+          if (curYearMonthData.products) {
+            curYearMonthData.products.forEach(function (product, index) {
+              console.log('product===', product, index)
+              $addBtn.trigger('click')
+              const $productTr = $formTable.find('tbody').children('tr').eq(index)
+              $productTr.find('.name-input').val(product.name)
+              $productTr.find('.amount-input').val(product.amount)
+              $productTr.find('.number-input').val(product.num)
+              $productTr.find('.packing-cost-input').val(product.packingCost)
+              if (product.sku) {
+                const $addSkuBtn = $productTr.find('.sku-add-btn')
+                const $skuList = $productTr.find('.sku-list')
+                product.sku.forEach(function (skuItem, skuIndex) {
+                  let $skuTr = $productTr.find('.sku-item').eq(skuIndex)
+                  if (!$skuTr.length) {
+                    $addSkuBtn.trigger('click')
+                    $skuTr = $productTr.find('.sku-item').eq(skuIndex)
+                  }
+                  $skuTr.find('.sku-name-input').val(skuItem.skuName)
+                  $skuTr.find('.sku-number-input').val(skuItem.skuNumber)
+                  $skuTr.find('.sku-prime-input').val(skuItem.skuPrime)
+                })
+              }
+            })
+          }
+        } else {
+          $addBtn.trigger('click')
+        }
+      })
+
+      $calcBtn.on('click', function () {
+        let dataList = []
+        const $productTrs = $formTable.find('tbody').children('tr')
+        let totalSkuCost = 0
+        const totalAmount = $totalAmount.val()
+        let totalCalcAmount = 0
+        let totalOrderNum = $totalOrderNum.val()
+        totalOrderNum = totalOrderNum ? Number(totalOrderNum) : 0
+        let transportationExpenses = $transportationExpenses.val()
+        transportationExpenses = transportationExpenses ? Number(transportationExpenses) : 0
+        let otherTransportationExpenses = $otherTransportationExpenses.val()
+        otherTransportationExpenses = otherTransportationExpenses ? Number(otherTransportationExpenses) : 0
+        let totalIncome = totalAmount ? Number(totalAmount) : 0
+        
+        $productTrs.each(function (index, tr) {
+          let dataListItem = {}
+          const $tr = $(tr)
+          const $nameInput = $tr.find('.name-input')
+          const $amountInput = $tr.find('.amount-input')
+          const $numberInput = $tr.find('.number-input')
+          const $packingCostInput = $tr.find('.packint-cost-input')
+          const $skuItems = $tr.find('.sku-list .sku-item')
+          let name = $nameInput.val()
+          let amount = $amountInput.val()
+          let num = $numberInput.val()
+          let packingCost = $packingCostInput.val()
+          amount = amount ? Number(amount) : 0
+          num = num ? Number(num) : 0
+          packingCost = packingCost ? Number(packingCost) : 0
+          let skuCost = 0
+          let dataListItemSku = []
+          $skuItems.each(function (skuIndex, skuItem) {
+            const $skuItem = $(skuItem)
+            const $skuNameInput = $skuItem.find('.sku-name-input')
+            const $skuPrimeInput = $skuItem.find('.sku-prime-input')
+            const $skuNumberInput = $skuItem.find('.sku-number-input')
+            const skuName = $skuNameInput.val()
+            let skuPrime = $skuPrimeInput.val()
+            let skuNumber = $skuNumberInput.val()
+            skuPrime = skuPrime ? Number(skuPrime) : 0
+            skuNumber = skuNumber ? Number(skuNumber) : 0
+            // console.log('skuPrime===', skuPrime)
+            // console.log('skuNumber===', skuNumber)
+            const skuItemCost = new Big(skuPrime).times(new Big(skuNumber)).toNumber()
+            skuCost = new Big(skuCost).add(skuItemCost).toNumber()
+            dataListItemSku.push({
+              skuName,
+              skuPrime,
+              skuNumber
+            })
+          })
+          Object.assign(dataListItem, {
+            name,
+            amount,
+            num,
+            packingCost,
+            sku: dataListItemSku
+          })
+          dataList.push(dataListItem)
+          // console.log('skuCost===', skuCost)
+          totalSkuCost = new Big(totalSkuCost).add(skuCost).toNumber()
+          totalCalcAmount = new Big(totalCalcAmount).add(amount).toNumber()
+          if (!totalAmount) {
+            const productPackingCost = new Big(packingCost).times(num).toNumber()
+            // const productIncome = amount - (packingCost * num) - skuCost
+            const productIncome = new Big(amount).minus(productPackingCost).minus(skuCost).toNumber()
+            // console.log('productIncome===', productIncome)
+            $tr.find('.income-span').html(productIncome)
+            // totalIncome += productIncome
+            totalIncome = new Big(totalIncome).add(productIncome).toNumber()
+          }
+        })
+        console.log('dataList===', dataList)
+        console.log('totalSkuCost===', totalSkuCost)
+        $totalPrime.html(totalSkuCost)
+        $totalCalcAmount.html(totalCalcAmount)
+        if (totalAmount) {
+          // totalIncome -= totalSkuCost
+          console.log('in=================')
+          totalIncome = new Big(totalIncome).minus(totalSkuCost).toNumber()
+        }
+        if (transportationExpenses) {
+          totalIncome = new Big(totalIncome).minus(transportationExpenses).toNumber()
+        }
+        if (otherTransportationExpenses) {
+          totalIncome = new Big(totalIncome).minus(otherTransportationExpenses).toNumber()
+        }
+        // 是否剔除包装支出
+        if ($removePackingCost.prop('checked')) {
+          const totalPackingCost = new Big(totalOrderNum).times(0.2)
+          totalIncome = new Big(totalIncome).minus(totalPackingCost).toNumber()
+          $removePackingCostSpan.html(`${totalOrderNum}×0.2=${totalPackingCost}`)
+        }
+        // 是否剔除售后支出
+        if ($removeCustomerServiceCost.prop('checked')) {
+          const customerServiceCost = new Big(totalOrderNum).times(0.15)
+          totalIncome = new Big(totalIncome).minus(customerServiceCost).toNumber()
+          $removeCustomerServiceCostSpan.html(`${totalOrderNum}×0.15=${customerServiceCost}`)
+        }
+        $totalProfit.html(totalIncome)
+        console.log('totalIncome===', totalIncome)
+        const yearMonth = $yearMonth.val()
+        let cacheDataStr = localStorage.getItem('cacheData')
+        let cacheData = cacheDataStr ? JSON.parse(cacheDataStr) : {}
+        cacheData[yearMonth] = {
+          totalAmount: $totalAmount.val(),
+          totalOrderNum: $totalOrderNum.val(),
+          transportationExpenses: $transportationExpenses.val(),
+          otherTransportationExpenses: $otherTransportationExpenses.val(),
+          products: dataList
+        }
+        console.log('cacheData===', cacheData)
+        localStorage.setItem('cacheData', JSON.stringify(cacheData))
+      })
+
+      $yearMonth.trigger('change')
+
+    })
+  </script>
+</body>
+</html>
