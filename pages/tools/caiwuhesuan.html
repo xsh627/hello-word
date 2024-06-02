@@ -1532,12 +1532,11 @@
           $totalProfit.empty()
           const yearMonth = $yearMonth.val()
           let cacheData = {}
-          const cacheDataStr = localStorage.getItem('cacheData')
-          if (cacheDataStr) {
-            cacheData = JSON.parse(cacheDataStr)
-          } else {
-            cacheData = defaultCacheData
-          }
+          cacheData = defaultCacheData
+          // const cacheDataStr = localStorage.getItem('cacheData')
+          // if (cacheDataStr) {
+          //   cacheData = JSON.parse(cacheDataStr)
+          // }
           // console.log('cacheDataStr===', cacheDataStr)
           let curYearMonthData = cacheData[yearMonth]
           console.log('cacheData===', cacheData)
