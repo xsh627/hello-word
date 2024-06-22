@@ -21,7 +21,19 @@
       margin: 20px;
     }
     .list-item {
-      margin: 0 10px;
+      position: relative;
+      padding: 1px;
+      margin: 1px 10px;
+    }
+    .list-item.great {
+      background-color: #ffd700;
+    }
+    .list-item.good {
+      background-color: #b9b9f1;
+    }
+    .list-item:hover .hover-pop {
+      display: block;
+      color: #333;
     }
     #greatList {
       color: #f00;
@@ -32,12 +44,34 @@
     #badList {
       color: #808080;
     }
+    .hover-pop {
+      position: absolute;
+      left: 35px;
+      top: 25px;
+      display: none;
+      width: 120px;
+      padding: 10px;
+      background-color: #dcdcdc;
+      z-index: 100;
+    }
+    .color-great {
+      color: #f00;
+    }
+    .color-ok {
+      color: #ffa500;
+    }
+    .color-bad {
+      color: #999;
+    }
   </style>
 </head>
 <body>
   <div class="wrapper">
+    <h3 class="color-great">吉</h3>
     <ul class="list" id="greatList"></ul>
+    <h3 class="color-ok">半吉</h3>
     <ul class="list" id="okList"></ul>
+    <h3 class="color-bad">凶</h3>
     <ul class="list" id="badList"></ul>
   </div>
   <script>
@@ -52,13 +86,13 @@
       const shuiObj = {
         文: 4,
         云: 4,
-        化: 4,
+        // 化: 4,
         平: 5,
         发: 12,
-        劢: 15,
+        // 劢: 15,
         汇: 13,
         冰: 6,
-        帆: 6,
+        // 帆: 6,
         江: 7,
         兴: 15,
         沣: 22,
@@ -69,9 +103,9 @@
         涣: 13,
         晖: 13,
         珲: 14,
-        浠: 11,
+        // 浠: 11,
         泰: 9,
-        鸿: 17,
+        // 鸿: 17,
         淇: 12,
         望: 11,
         琲: 13,
@@ -81,7 +115,7 @@
         湟: 13,
         辉: 15,
         渝: 13,
-        霆: 15,
+        // 霆: 15,
         潮: 16,
         潭: 16,
         霏: 16,
@@ -122,7 +156,6 @@
         for (let charOfJin in jinObj) {
           const BCD = `${firstName}${charOfShui}${charOfJin}`
           const CD = `${charOfShui}${charOfJin}`
-          let points = 0
           let CDnumber = shuiObj[charOfShui] + jinObj[charOfJin]
           let BCDnumber = firstNameNum + shuiObj[charOfShui] + jinObj[charOfJin]
           let great = 0
@@ -138,23 +171,48 @@
               bad++
             }
           })
-          nameObj[BCD] = {
-            totalName: BCD,
-            lastName: CD,
-            points
-          }
+
+          let popHtml = `
+            <div class="hover-pop">
+              <div class="result">
+                ${great ? `<div class="color-great">${great}吉</div>` : ''}
+                ${ok ? `<div class="color-ok">${ok}半吉</div>` : ''}
+                ${bad ? `<div class="color-bad">${bad}凶</div>` : ''}
+              </div>
+              <div class="name-b">${firstName}-${firstNameNum}</div>
+              <div class="name-c">${charOfShui}-${shuiObj[charOfShui]}</div>
+              <div class="name-d">${charOfJin}-${jinObj[charOfJin]}</div>
+            </div>
+          `
+          let itemClassList = ['list-item']
+          let itemClass = ''
+          let $ul
           if (great >= 2) {
             greatNameList.push(nameObj[BCD])
             greatLastNameList.push(CD)
-            $greatListUl.append(`<li class="list-item">${CD}</li>`)
+            if (great === 3) {
+              itemClassList.push('great')
+            } else if (ok === 1) {
+              itemClassList.push('good')
+            }
+            $ul = $greatListUl
           } else if (bad >= 2) {
             badNameList.push(nameObj[BCD])
             badLastNameList.push(CD)
-            $okListUl.append(`<li class="list-item">${CD}</li>`)
+            $ul = $badListUl
           } else {
             okNameList.push(nameObj[BCD])
             okLastNameList.push(CD)
-            $badListUl.append(`<li class="list-item">${CD}</li>`)
+            $ul = $okListUl
+          }
+          itemClass = itemClassList.join(' ')
+          $ul.append(`<li class="${itemClass}">${CD}${popHtml}</li>`)
+          nameObj[BCD] = {
+            totalName: BCD,
+            lastName: CD,
+            B: firstName,
+            C: charOfShui,
+            D: charOfJin
           }
         }
       }
