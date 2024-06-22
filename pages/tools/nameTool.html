@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Name Tool</title>
+  <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.7.1/jquery.js"></script>
+  <script src="https://cdn.bootcdn.net/ajax/libs/big.js/6.2.1/big.js"></script>
+  <script src="https://cdn.bootcdn.net/ajax/libs/vConsole/3.15.1/vconsole.min.js"></script>
+  <style>
+    * {
+      padding: 0;
+      margin: 0;
+    }
+    ul, li {
+      list-style: none;
+    }
+    .list {
+      display: flex;
+      flex-wrap: wrap;
+      margin: 20px;
+    }
+    .list-item {
+      margin: 0 10px;
+    }
+    #greatList {
+      color: #f00;
+    }
+    #okList {
+      color: #ffa500;
+    }
+    #badList {
+      color: #808080;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <ul class="list" id="greatList"></ul>
+    <ul class="list" id="okList"></ul>
+    <ul class="list" id="badList"></ul>
+  </div>
+  <script>
+    $(function () {
+      const $greatListUl = $('#greatList')
+      const $okListUl = $('#okList')
+      const $badListUl = $('#badList')
+
+      const greatNumList = [ 1, 3, 5, 6, 7, 11, 13, 15, 16, 21, 23, 24, 29, 31, 32, 33, 35, 37, 41, 45, 47, 48, 52, 57, 61, 63, 65, 67, 68, 81 ]
+      const okNumList = [ 8, 17, 18, 25, 30, 36, 38, 39, 49, 50, 51, 55, 58, 71, 72, 73, 77 ]
+
+      const shuiObj = {
+        文: 4,
+        云: 4,
+        化: 4,
+        平: 5,
+        发: 12,
+        劢: 15,
+        汇: 13,
+        冰: 6,
+        帆: 6,
+        江: 7,
+        兴: 15,
+        沣: 22,
+        沛: 8,
+        希: 7,
+        朋: 8,
+        海: 11,
+        涣: 13,
+        晖: 13,
+        珲: 14,
+        浠: 11,
+        泰: 9,
+        鸿: 17,
+        淇: 12,
+        望: 11,
+        琲: 13,
+        斌: 11,
+        博: 12,
+        韩: 17,
+        湟: 13,
+        辉: 15,
+        渝: 13,
+        霆: 15,
+        潮: 16,
+        潭: 16,
+        霏: 16,
+        翰: 16,
+        瀚: 20,
+        霖: 16
+      }
+      const jinObj = {
+        生: 5,
+        世: 5,
+        丞: 6,
+        创: 12,
+        列: 6,
+        先: 6,
+        州: 6,
+        庄: 6,
+        钊: 10,
+        昌: 8,
+        承: 8,
+        金: 8,
+        剀: 12,
+        青: 8,
+        锴: 17,
+        骏: 17
+      }
+      const firstName = '萧'
+      const firstNameNum = 18
+      let nameObj = {}
+      let greatNameList = []
+      let okNameList = []
+      let badNameList = []
+
+      let greatLastNameList = []
+      let okLastNameList = []
+      let badLastNameList = []
+      for (let charOfShui in shuiObj) {
+        let BCnumber = firstNameNum + shuiObj[charOfShui]
+        for (let charOfJin in jinObj) {
+          const BCD = `${firstName}${charOfShui}${charOfJin}`
+          const CD = `${charOfShui}${charOfJin}`
+          let points = 0
+          let CDnumber = shuiObj[charOfShui] + jinObj[charOfJin]
+          let BCDnumber = firstNameNum + shuiObj[charOfShui] + jinObj[charOfJin]
+          let great = 0
+          let ok = 0
+          let bad = 0
+
+          ;[BCnumber, CDnumber, BCDnumber].forEach((item, index) => {
+            if (greatNumList.includes(item)) {
+              great++
+            } else if (okNumList.includes(item)) {
+              ok++
+            } else {
+              bad++
+            }
+          })
+          nameObj[BCD] = {
+            totalName: BCD,
+            lastName: CD,
+            points
+          }
+          if (great >= 2) {
+            greatNameList.push(nameObj[BCD])
+            greatLastNameList.push(CD)
+            $greatListUl.append(`<li class="list-item">${CD}</li>`)
+          } else if (bad >= 2) {
+            badNameList.push(nameObj[BCD])
+            badLastNameList.push(CD)
+            $okListUl.append(`<li class="list-item">${CD}</li>`)
+          } else {
+            okNameList.push(nameObj[BCD])
+            okLastNameList.push(CD)
+            $badListUl.append(`<li class="list-item">${CD}</li>`)
+          }
+        }
+      }
+      console.log('nameObj===', nameObj)
+    })
+  </script>
+</body>
+</html>
