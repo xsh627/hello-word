@@ -15,6 +15,12 @@
     ul, li {
       list-style: none;
     }
+    .operate-area {
+      padding: 20px;
+    }
+    .operate-item {
+      margin-right: 20px;
+    }
     .list {
       display: flex;
       flex-wrap: wrap;
@@ -67,6 +73,16 @@
 </head>
 <body>
   <div class="wrapper">
+    <div class="operate-area">
+      <label for="" class="operate-item">
+        <input type="radio" class="first-name-radio" name="first-name" value="18" />
+        <span>萧</span>
+      </label>
+      <label for="" class="operate-item">
+        <input type="radio" class="first-name-radio" name="first-name" value="9" />
+        <span>肖</span>
+      </label>
+    </div>
     <h3 class="color-great">吉</h3>
     <ul class="list" id="greatList"></ul>
     <h3 class="color-ok">半吉</h3>
@@ -76,6 +92,7 @@
   </div>
   <script>
     $(function () {
+      const $firstNameRadio = $('.first-name-radio')
       const $greatListUl = $('#greatList')
       const $okListUl = $('#okList')
       const $badListUl = $('#badList')
@@ -131,7 +148,8 @@
         霄: 15,
         泳: 9,
         浚: 11,
-        沐: 8
+        沐: 8,
+        明: 8
       }
       const jinObj = {
         生: 5,
@@ -170,82 +188,98 @@
         玹: 10,
         瑆: 14
       }
-      const firstName = '萧'
-      const firstNameNum = 18
-      let nameObj = {}
-      let greatNameList = []
-      let okNameList = []
-      let badNameList = []
+      
+      $('.first-name-radio[value="18"]').click()
+      getResult()
 
-      let greatLastNameList = []
-      let okLastNameList = []
-      let badLastNameList = []
-      for (let charOfShui in shuiObj) {
-        let BCnumber = firstNameNum + shuiObj[charOfShui]
-        for (let charOfJin in jinObj) {
-          const BCD = `${firstName}${charOfShui}${charOfJin}`
-          const CD = `${charOfShui}${charOfJin}`
-          let CDnumber = shuiObj[charOfShui] + jinObj[charOfJin]
-          let BCDnumber = firstNameNum + shuiObj[charOfShui] + jinObj[charOfJin]
-          let great = 0
-          let ok = 0
-          let bad = 0
+      $firstNameRadio.change(function () {
+        getResult()
+      })
 
-          ;[BCnumber, CDnumber, BCDnumber].forEach((item, index) => {
-            if (greatNumList.includes(item)) {
-              great++
-            } else if (okNumList.includes(item)) {
-              ok++
-            } else {
-              bad++
-            }
-          })
+      function getResult () {
+        const firstName = '萧'
+        const firstNameNum = Number($('.first-name-radio:checked').val())
 
-          let popHtml = `
-            <div class="hover-pop">
-              <div class="result">
-                ${great ? `<div class="color-great">${great}吉</div>` : ''}
-                ${ok ? `<div class="color-ok">${ok}半吉</div>` : ''}
-                ${bad ? `<div class="color-bad">${bad}凶</div>` : ''}
+        console.log('firstNameNum===', firstNameNum)
+        $greatListUl.empty()
+        $okListUl.empty()
+        $badListUl.empty()
+
+        let nameObj = {}
+        let greatNameList = []
+        let okNameList = []
+        let badNameList = []
+
+        let greatLastNameList = []
+        let okLastNameList = []
+        let badLastNameList = []
+        for (let charOfShui in shuiObj) {
+          let BCnumber = firstNameNum + shuiObj[charOfShui]
+          for (let charOfJin in jinObj) {
+            const BCD = `${firstName}${charOfShui}${charOfJin}`
+            const CD = `${charOfShui}${charOfJin}`
+            let CDnumber = shuiObj[charOfShui] + jinObj[charOfJin]
+            let BCDnumber = firstNameNum + shuiObj[charOfShui] + jinObj[charOfJin]
+            let great = 0
+            let ok = 0
+            let bad = 0
+
+            ;[BCnumber, CDnumber, BCDnumber].forEach((item, index) => {
+              if (greatNumList.includes(item)) {
+                great++
+              } else if (okNumList.includes(item)) {
+                ok++
+              } else {
+                bad++
+              }
+            })
+
+            let popHtml = `
+              <div class="hover-pop">
+                <div class="result">
+                  ${great ? `<div class="color-great">${great}吉</div>` : ''}
+                  ${ok ? `<div class="color-ok">${ok}半吉</div>` : ''}
+                  ${bad ? `<div class="color-bad">${bad}凶</div>` : ''}
+                </div>
+                <div class="name-b">${firstName}-${firstNameNum}</div>
+                <div class="name-c">${charOfShui}-${shuiObj[charOfShui]}</div>
+                <div class="name-d">${charOfJin}-${jinObj[charOfJin]}</div>
               </div>
-              <div class="name-b">${firstName}-${firstNameNum}</div>
-              <div class="name-c">${charOfShui}-${shuiObj[charOfShui]}</div>
-              <div class="name-d">${charOfJin}-${jinObj[charOfJin]}</div>
-            </div>
-          `
-          let itemClassList = ['list-item']
-          let itemClass = ''
-          let $ul
-          if (great >= 2) {
-            greatNameList.push(nameObj[BCD])
-            greatLastNameList.push(CD)
-            if (great === 3) {
-              itemClassList.push('great')
-            } else if (ok === 1) {
-              itemClassList.push('good')
+            `
+            let itemClassList = ['list-item']
+            let itemClass = ''
+            let $ul
+            if (great >= 2) {
+              greatNameList.push(nameObj[BCD])
+              greatLastNameList.push(CD)
+              if (great === 3) {
+                itemClassList.push('great')
+              } else if (ok === 1) {
+                itemClassList.push('good')
+              }
+              $ul = $greatListUl
+            } else if (bad >= 2) {
+              badNameList.push(nameObj[BCD])
+              badLastNameList.push(CD)
+              $ul = $badListUl
+            } else {
+              okNameList.push(nameObj[BCD])
+              okLastNameList.push(CD)
+              $ul = $okListUl
             }
-            $ul = $greatListUl
-          } else if (bad >= 2) {
-            badNameList.push(nameObj[BCD])
-            badLastNameList.push(CD)
-            $ul = $badListUl
-          } else {
-            okNameList.push(nameObj[BCD])
-            okLastNameList.push(CD)
-            $ul = $okListUl
-          }
-          itemClass = itemClassList.join(' ')
-          $ul.append(`<li class="${itemClass}">${CD}${popHtml}</li>`)
-          nameObj[BCD] = {
-            totalName: BCD,
-            lastName: CD,
-            B: firstName,
-            C: charOfShui,
-            D: charOfJin
+            itemClass = itemClassList.join(' ')
+            $ul.append(`<li class="${itemClass}">${CD}${popHtml}</li>`)
+            nameObj[BCD] = {
+              totalName: BCD,
+              lastName: CD,
+              B: firstName,
+              C: charOfShui,
+              D: charOfJin
+            }
           }
         }
+        console.log('nameObj===', nameObj)
       }
-      console.log('nameObj===', nameObj)
     })
   </script>
 </body>
