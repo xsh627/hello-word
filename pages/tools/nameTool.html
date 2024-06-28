@@ -75,11 +75,11 @@
   <div class="wrapper">
     <div class="operate-area">
       <label for="" class="operate-item">
-        <input type="radio" class="first-name-radio" name="first-name" value="18" />
+        <input type="radio" class="first-name-radio" name="first-name" value="0" />
         <span>萧</span>
       </label>
       <label for="" class="operate-item">
-        <input type="radio" class="first-name-radio" name="first-name" value="9" />
+        <input type="radio" class="first-name-radio" name="first-name" value="1" />
         <span>肖</span>
       </label>
     </div>
@@ -100,7 +100,18 @@
       const greatNumList = [ 1, 3, 5, 6, 7, 11, 13, 15, 16, 21, 23, 24, 29, 31, 32, 33, 35, 37, 41, 45, 47, 48, 52, 57, 61, 63, 65, 67, 68, 81 ]
       const okNumList = [ 8, 17, 18, 25, 30, 36, 38, 39, 49, 50, 51, 55, 58, 71, 72, 73, 77 ]
 
+      const firstNameList = [
+        {
+          name: '萧',
+          num: 18
+        }, {
+          name: '肖',
+          num: 9
+        }
+      ]
+
       const shuiObj = {
+        子: 3,
         文: 4,
         云: 4,
         // 化: 4,
@@ -189,7 +200,7 @@
         瑆: 14
       }
       
-      $('.first-name-radio[value="18"]').click()
+      $('.first-name-radio').eq(0).click()
       getResult()
 
       $firstNameRadio.change(function () {
@@ -197,8 +208,14 @@
       })
 
       function getResult () {
-        const firstName = '萧'
-        const firstNameNum = Number($('.first-name-radio:checked').val())
+        const firstNameRadioVal = $('.first-name-radio:checked').val()
+
+        if (!firstNameRadioVal) {
+          return
+        }
+
+        const firstName = firstNameList[firstNameRadioVal].name
+        const firstNameNum = firstNameList[firstNameRadioVal].num
 
         console.log('firstNameNum===', firstNameNum)
         $greatListUl.empty()
