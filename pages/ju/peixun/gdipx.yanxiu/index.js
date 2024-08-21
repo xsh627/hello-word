@@ -20,11 +20,13 @@ let timer = setInterval(function () {
   if ($pop.offsetWidth > 0) {
     let $ratingWrapper = $pop.querySelector('.rating')
     if ($ratingWrapper) {
+      console.log('$ratingWrapper===', $ratingWrapper)
       let $lastItem = $ratingWrapper.children[4]
       if ($lastItem) {
+        console.log('$lastItem===', $lastItem)
         $lastItem.click()
-        $pop.querySelector('.scoring-wrapper').querySelector('.commit').querySelector('button').click()
+        $pop.querySelector('.commit').querySelector('button').click()
       }
     }
   }
-}, 1000*60*10)
+}, 1000*60*1)
